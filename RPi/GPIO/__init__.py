@@ -195,14 +195,16 @@ class PWM:
         Stops outputting a wave on the assigned pin, and sets the pin's state
         to off.
         """
-        # We do not care about errors in stop; __del__ methods (from which this
-        # is called) should generally avoid exceptions but moreover, it should
-        # be idempotent on outputs
-        try:
-            lgpio.tx_pwm(_chip, self._gpio, 0, 0)
-        except lgpio.error:
-            pass
-        lgpio.gpio_write(_chip, self._gpio, 0)
+        # First check if the chip was already released by cleanup()
+        if _chip is not None:
+            # We do not care about errors in stop; __del__ methods (from which this
+            # is called) should generally avoid exceptions but moreover, it should
+            # be idempotent on outputs
+            try:
+                lgpio.tx_pwm(_chip, self._gpio, 0, 0)
+            except lgpio.error:
+                pass
+            lgpio.gpio_write(_chip, self._gpio, 0)
         self._running = False
 
     def ChangeDutyCycle(self, dc):
